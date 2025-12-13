@@ -12,7 +12,7 @@ Released under the MIT license: http://jsbin.mit-license.org
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>沖繩五日冬之旅 | Okinawa 2026</title>
+    <title>Okinawa 2026</title>
     
     <!-- 載入 Tailwind CSS -->
     <script type="text/javascript" nonce="af1a00534e5947d28343aa42469" src="//local.adguard.org?ts=1765600314678&amp;type=content-script&amp;dmn=jsbin.com&amp;url=https%3A%2F%2Fjsbin.com%2Fdownload&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="af1a00534e5947d28343aa42469" src="//local.adguard.org?ts=1765600314678&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script src="https://cdn.tailwindcss.com"></script>
@@ -614,7 +614,7 @@ Released under the MIT license: http://jsbin.mit-license.org
             if (code === 0) return { icon: isDay ? "fa-sun" : "fa-moon", text: "晴朗", color: "text-orange-400" };
             // 1, 2, 3: Mainly clear, partly cloudy, and overcast
             if (code === 1) return { icon: isDay ? "fa-cloud-sun" : "fa-cloud-moon", text: "多雲", color: "text-orange-300" };
-            if (code === 2) return { icon: "fa-cloud", text: "陰天", color: "text-gray-400" };
+            if (code === 2) return { icon: "fa-cloud", text: "多雲", color: "text-gray-400" };
             if (code === 3) return { icon: "fa-cloud", text: "陰天", color: "text-gray-500" };
             // 45, 48: Fog
             if (code === 45 || code === 48) return { icon: "fa-smog", text: "起霧", color: "text-gray-400" };
