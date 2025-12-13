@@ -659,123 +659,115 @@ Released under the MIT license: http://jsbin.mit-license.org
         }
 
         function renderItinerary(index) {
-            const dayData = itineraryData[index];
-            headerDate.innerText = dayData.date === "重要資訊" ? "INFO" : dayData.date;
-            
-            let html = '';
+    const dayData = itineraryData[index];
+    headerDate.innerText = dayData.date === "重要資訊" ? "INFO" : dayData.date;
+    
+    let html = '';
 
-            // 標題區塊 (手機版顯示 Hero 資訊)
+    // 標題區塊 (手機版顯示 Hero 資訊)
+    html += `
+        <div class="mb-6 fade-in">
+            <h2 class="text-2xl font-bold text-[var(--primary-color)] serif-font">${dayData.title}</h2>
+            <p class="text-[var(--text-sub)] text-sm mt-1">${dayData.summary}</p>
+            <div class="md:hidden mt-4 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+                <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> 導遊筆記</p>
+                ${dayData.guideNotes}
+            </div>
+        </div>
+    `;
+
+    // 行程列表
+    if (dayData.activities) {
+        html += '<div class="relative space-y-6 pl-2">'; // Timeline container
+        
+        dayData.activities.forEach((activity, idx) => {
+            const isLast = idx === dayData.activities.length - 1;
+            
+            // 產生唯一的 ID 用於非同步更新天氣
+            const weatherId = `weather-${index}-${idx}`;
+            
+            // 導航連結 (使用 Google Maps 搜尋地點名)
+            let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}`;
+            
+            // --- 圖片渲染邏輯 (已更新) ---
+            // 檢查 activity.images (新陣列屬性) 是否存在且有內容
+            const imageHtml = activity.images && activity.images.length > 0
+                ? `<div class="flex flex-wrap gap-2 mb-4">
+                    ${activity.images.map(imagePath => `
+                        <div class="flex-1 min-w-[45%] overflow-hidden rounded-lg shadow-sm border border-gray-100">
+                            <img src="${imagePath}" class="w-full h-auto object-cover aspect-[4/3]" alt="${activity.title} Image">
+                        </div>
+                    `).join('')}
+                   </div>`
+                : '';
+            // -----------------------------
+
             html += `
-                <div class="mb-6 fade-in">
-                    <h2 class="text-2xl font-bold text-[var(--primary-color)] serif-font">${dayData.title}</h2>
-                    <p class="text-[var(--text-sub)] text-sm mt-1">${dayData.summary}</p>
-                    <div class="md:hidden mt-4 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
-                        <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> 導遊筆記</p>
-                        ${dayData.guideNotes}
+                <div class="relative flex gap-4 fade-in ${isLast ? 'last-item' : ''}" style="animation-delay: ${idx * 0.1}s">
+                    <div class="flex flex-col items-center">
+                        <!-- 時間軸圓點 -->
+                        <div class="rounded-full bg-white border-2 border-[var(--accent-color)] flex items-center justify-center text-[var(--accent-color)] shadow-sm z-10 shrink-0"
+                            style="width: var(--timeline-icon-size); height: var(--timeline-icon-size); font-size: var(--timeline-icon-font-size);">
+                            <i class="fa-solid ${activity.icon}"></i>
+                        </div>
+                        <!-- 時間軸線 -->
+                        <div class="timeline-line"></div>
+                    </div>
+
+                    <!-- 行程卡片 -->
+                    <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                        
+                        <!-- 天氣資訊 (初始顯示載入中) -->
+                        <div id="${weatherId}" class="absolute top-4 right-4 text-xs font-medium flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md text-gray-400">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> 載入中...
+                        </div>
+
+                        <div class="font-bold text-[var(--primary-color)] mb-1 tracking-wide uppercase" style="font-size: var(--meta-font-size);">${activity.time}</div>
+                        <h3 class="font-bold text-[var(--text-main)] mb-1" style="font-size: var(--title-font-size);">${activity.title}</h3>
+                        <p class="text-[var(--text-sub)] flex items-center gap-1 mb-3" style="font-size: var(--meta-font-size);">
+                            <i class="fa-solid fa-location-dot text-gray-400 text-xs"></i> ${activity.location}
+                        </p>
+                        
+                        <!-- 詳細備註 -->
+                        <div class="text-gray-600 mb-4 leading-relaxed p-3 border-l-2 border-gray-200 bg-gray-50/50 rounded-r-lg" style="font-size: var(--note-font-size); line-height: 1.6;">
+                            ${activity.note}
+                        </div>
+
+                        <!-- 圖片顯示區塊 (使用新的 imageHtml 變數) -->
+                        ${imageHtml}
+
+                        <!-- 動作按鈕 (Flex wrap 支援多按鈕) -->
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <a href="${mapUrl}" target="_blank" class="nav-btn px-4 py-2 rounded-lg text-center font-medium text-gray-700 flex items-center justify-center gap-2 hover:bg-gray-50 flex-grow" style="font-size: var(--meta-font-size);">
+                                <i class="fa-solid fa-location-arrow text-[var(--primary-color)]"></i> 導航
+                            </a>
+                            
+                            ${activity.link ? `
+                            <a href="${activity.link}" target="_blank" class="nav-btn w-10 py-2 rounded-lg text-center text-gray-500 flex items-center justify-center hover:bg-gray-50" title="相關連結">
+                                <i class="fa-solid fa-link"></i>
+                            </a>` : ''}
+
+                            <!-- 顯示額外文字連結 -->
+                            ${activity.additionalLinks ? activity.additionalLinks.map(link => `
+                            <a href="${link.url}" target="_blank" class="nav-btn px-3 py-2 rounded-lg text-center font-medium text-gray-600 flex items-center justify-center gap-1 hover:bg-gray-50" style="font-size: var(--meta-font-size);">
+                                <i class="fa-solid fa-up-right-from-square text-xs"></i> ${link.text}
+                            </a>
+                            `).join('') : ''}
+                        </div>
                     </div>
                 </div>
             `;
-
-            // 行程列表
-            if (dayData.activities) {
-                html += '<div class="relative space-y-6 pl-2">'; // Timeline container
-                
-                dayData.activities.forEach((activity, idx) => {
-                    const isLast = idx === dayData.activities.length - 1;
-                    
-                    // 產生唯一的 ID 用於非同步更新天氣
-                    const weatherId = `weather-${index}-${idx}`;
-                    
-                    // 導航連結 (使用 Google Maps 搜尋地點名)
-                    let mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location)}`;
-                    
-                    html += `
-                        <div class="relative flex gap-4 fade-in ${isLast ? 'last-item' : ''}" style="animation-delay: ${idx * 0.1}s">
-                            <div class="flex flex-col items-center">
-                                <!-- 時間軸圓點 -->
-                                <!-- 長輩模式修正: 使用變數控制大小 -->
-                                <div class="rounded-full bg-white border-2 border-[var(--accent-color)] flex items-center justify-center text-[var(--accent-color)] shadow-sm z-10 shrink-0"
-                                     style="width: var(--timeline-icon-size); height: var(--timeline-icon-size); font-size: var(--timeline-icon-font-size);">
-                                    <i class="fa-solid ${activity.icon}"></i>
-                                </div>
-                                <!-- 時間軸線 -->
-                                <div class="timeline-line"></div>
-                            </div>
-
-                            <!-- 行程卡片 -->
-                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                                
-                                <!-- 天氣資訊 (初始顯示載入中) -->
-                                <div id="${weatherId}" class="absolute top-4 right-4 text-xs font-medium flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md text-gray-400">
-                                    <i class="fa-solid fa-circle-notch fa-spin"></i> 載入中...
-                                </div>
-
-                                <div class="font-bold text-[var(--primary-color)] mb-1 tracking-wide uppercase" style="font-size: var(--meta-font-size);">${activity.time}</div>
-                                <h3 class="font-bold text-[var(--text-main)] mb-1" style="font-size: var(--title-font-size);">${activity.title}</h3>
-                                <p class="text-[var(--text-sub)] flex items-center gap-1 mb-3" style="font-size: var(--meta-font-size);">
-                                    <i class="fa-solid fa-location-dot text-gray-400 text-xs"></i> ${activity.location}
-                                </p>
-                                
-                                <!-- 詳細備註 -->
-                                <!-- 長輩模式修正: 增加字體大小與行高 -->
-                                <div class="text-gray-600 mb-4 leading-relaxed p-3 border-l-2 border-gray-200 bg-gray-50/50 rounded-r-lg" style="font-size: var(--note-font-size); line-height: 1.6;">
-                                    ${activity.note}
-                                </div>
-
-                                <!-- 修改處：顯示圖片 -->
-                                ${activity.image ? `
-                                <div class="mb-4 overflow-hidden rounded-lg shadow-sm border border-gray-100">
-                                    <img src="${activity.image}" class="w-full h-auto object-cover" alt="${activity.title} Image">
-                                </div>
-                                ` : ''}
-
-                                <!-- 動作按鈕 (Flex wrap 支援多按鈕) -->
-                                <div class="flex flex-wrap gap-2 mt-auto">
-                                    <a href="${mapUrl}" target="_blank" class="nav-btn px-4 py-2 rounded-lg text-center font-medium text-gray-700 flex items-center justify-center gap-2 hover:bg-gray-50 flex-grow" style="font-size: var(--meta-font-size);">
-                                        <i class="fa-solid fa-location-arrow text-[var(--primary-color)]"></i> 導航
-                                    </a>
-                                    
-                                    ${activity.link ? `
-                                    <a href="${activity.link}" target="_blank" class="nav-btn w-10 py-2 rounded-lg text-center text-gray-500 flex items-center justify-center hover:bg-gray-50" title="相關連結">
-                                        <i class="fa-solid fa-link"></i>
-                                    </a>` : ''}
-
-                                    <!-- 修改處：顯示額外文字連結 -->
-                                    ${activity.additionalLinks ? activity.additionalLinks.map(link => `
-                                    <a href="${link.url}" target="_blank" class="nav-btn px-3 py-2 rounded-lg text-center font-medium text-gray-600 flex items-center justify-center gap-1 hover:bg-gray-50" style="font-size: var(--meta-font-size);">
-                                        <i class="fa-solid fa-up-right-from-square text-xs"></i> ${link.text}
-                                    </a>
-                                    `).join('') : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // 呼叫真實天氣 API
-                    setTimeout(() => {
-                        fetchRealWeather(activity.location, weatherId);
-                    }, idx * 100);
-                });
-                html += '</div>';
-            }
-
-            itineraryContainer.innerHTML = html;
-        }
-
-        function updateHero(index) {
-            const data = itineraryData[index];
-            const heroColorArea = document.getElementById('hero-color-area');
             
-            heroTitle.innerText = data.title;
-            heroDesc.innerText = data.summary;
-            guideNotes.innerHTML = data.guideNotes;
-        }
+            // 呼叫真實天氣 API
+            setTimeout(() => {
+                fetchRealWeather(activity.location, weatherId);
+            }, idx * 100);
+        });
+        html += '</div>';
+    }
 
-        // === 初始化 ===
-        window.onload = () => {
-            renderTabs();
-            switchTab(0); // 預設顯示第一天
-        };
+    itineraryContainer.innerHTML = html;
+}
 
     </script>
 </body>
